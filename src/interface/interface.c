@@ -94,7 +94,7 @@ void imprimir_outras_pilhas(EstadoJogo *e, int dica_o, int dica_d) {
     printf("============================================\n");
 }
 
-// Função que imprime tod
+// Função que imprime o tabuleiro
 void mostrarTabuleiro(EstadoJogo *e, int dica_o, int dica_d) {
     int max_h = obterMaxAltura(e);
     int h = 0;
