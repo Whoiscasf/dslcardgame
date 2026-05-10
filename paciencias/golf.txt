@@ -1,0 +1,26 @@
+# Joga-se com 1 baralho
+JOGO Golf
+BARALHOS 1
+# Pilhas no tabuleiro têm as cartas todas visíveis
+TIPO TAB =
+# Pilha de stock não tem cartas visíveis
+TIPO STOCK
+# Pilha de descarte mostra todas as cartas
+TIPO DESCARTE =
+# Há 7 pilhas de tabuleiro, cada uma com 5 cartas inicialmente
+INIT TAB 5
+INIT TAB 5
+INIT TAB 5
+INIT TAB 5
+INIT TAB 5
+INIT TAB 5
+INIT TAB 5
+# Pilha de descarte começa com 1 carta
+INIT DESCARTE 1
+# Pilha de stock começa com 16 cartas
+INIT STOCK 16
+# Podemos sempre mover uma carta do stock para o descarte
+MOV STOCK DESCARTE * # Podemos mover do tabuleiro para o descarte se o valor for -1/+1
+MOV TAB DESCARTE ~
+# Vitória quando todas as pilhas do tabuleiro estiverem vazias
+WIN TAB 0
