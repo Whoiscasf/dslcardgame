@@ -209,6 +209,6 @@ int main(void) {
         printf("\033[31m[ERRO] Falha ao carregar o jogo.\033[0m\n");
     }
 
-    printf("Obrigado por jogar!\n Até à próxima :)\n");
+    printf("Obrigado por jogar!\nAté à próxima :)\n");
     return 0;
 }
