@@ -3,14 +3,20 @@
 
 #include "estruturas.h"
 
-// Avisos (assinaturas) de todas as funções que podem ser usadas noutros ficheiros
+// Funções em interface.c
 void imprimirCarta(Carta c, int destaque);
 int obterMaxAltura(EstadoJogo *e);
+void imprimir_cabecalhos(EstadoJogo *e, int dica_o, int dica_d);
+void imprimir_linha_tabuleiro(EstadoJogo *e, int h, int dica_o, int dica_d);
+void imprimir_detalhe_pilha(Pilha *p, int num_coluna, int destaque);
+void imprimir_outras_pilhas(EstadoJogo *e, int dica_o, int dica_d);
 void mostrarTabuleiro(EstadoJogo *e, int dica_o, int dica_d);
+int listar_jogos(char ficheiros[][50]);
+void imprimir_cabecalho_menu(void);
 int menuPrincipal(char *caminho);
 void pedirJogada(int *orig, int *dest, int *qtd);
 
-// AQUI ESTÁ A CORREÇÃO: Avisamos o C que a função vitoria existe!
+// Funções em int
 void vitoria(void);
 
 #endif
