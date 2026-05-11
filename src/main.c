@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "../include/estruturas.h"
-#include "../include/parser.h"
+#include "../include/dsl.h"
 #include "../include/logica.h"
 #include "../include/interface.h"
 #include "../include/reutilizado.h"

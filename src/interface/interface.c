@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <sys/types.h>
 #include "../../include/estruturas.h"
 
 // Função que imprime uma carta
