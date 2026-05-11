@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Iinclude
 
-# 1. Os ficheiros de lógica pura (usados em ambos os lados)
+# 1. Os ficheiros de lógica
 BASE = src/dsl/leitor_dsl.c \
        src/dsl/save_load.c \
        src/interface/interface.c \
@@ -12,18 +12,18 @@ BASE = src/dsl/leitor_dsl.c \
        src/logica/undo.c \
        src/reutilizado/cartas_reutilizadas.c
 
-# 2. O JOGO PRINCIPAL (Junta a Base com o main.c)
+# 2. Jogo
 all:
 	$(CC) $(CFLAGS) src/main.c $(BASE) -o jogo
 
-# 3. OS TESTES (Juntam a Base com o testes.c e a biblioteca CUnit)
+# 3. Testes
 testes:
-	$(CC) $(CFLAGS) src/testes/testes.c $(BASE) -o correr_testes -lcunit
-	./correr_testes
+	$(CC) $(CFLAGS) src/testes/testes.c $(BASE) -o testes -lcunit
+	./testes
 
-# 4. AVALIAÇÃO DE COMPLEXIDADE (Avalia o jogo normal e os testes)
+# 4. PMCCABE
 pmccabe:
 	pmccabe src/main.c src/testes/testes.c $(BASE)
 
 clean:
-	rm -f jogo correr_testes
+	rm -f jogo testes
