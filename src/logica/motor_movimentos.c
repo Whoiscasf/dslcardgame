@@ -68,7 +68,10 @@ int verificar_movimento(Pilha *o, Pilha *d, char *flags, int q) {
     // 1. Validação de segurança básica: não pode mover zero cartas nem mais do que tem
     if (q <= 0 || q > o->quantidade) return 0;
 
-    // 2. A BARREIRA DO VAZIO (Onde estava o teu bug!)
+    // 2. O ESCUDO CONTRA O SEGMENTATION FAULT (Esta é a linha que faltava!)
+    if (flags == NULL) return 0;
+
+    // 3. A BARREIRA DO VAZIO
     if (d->quantidade == 0) {
         // Se as flags tiverem o caracter '0', permite o movimento
         if (strchr(flags, '0') != NULL) return 1;
@@ -77,11 +80,11 @@ int verificar_movimento(Pilha *o, Pilha *d, char *flags, int q) {
         return 0;
     }
 
-    // 3. Se a pilha de destino não está vazia, agarramos nas cartas a comparar
+    // 4. Se a pilha de destino não está vazia, agarramos nas cartas a comparar
     Carta c_origem = o->cartas[o->quantidade - q];
     Carta c_destino = d->cartas[d->quantidade - 1];
 
-    // 4. Envia para o motor de validação
+    // 5. Envia para o motor de validação
     return aplicar_regras(c_origem, c_destino, flags);
 }
 

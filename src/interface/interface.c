@@ -81,12 +81,10 @@ void imprimir_outras_pilhas(EstadoJogo *e, int dica_o, int dica_d) {
     int p = 0;
     printf("\n--- OUTRAS PILHAS ---\n");
     while (p < e->total_pilhas) {
+        // Se a pilha NÃO for do Tableau (T), imprime-a sempre!
         if (e->pilhas[p].nome_tipo[0] != 'T') {
-            // Se for uma Fundação (F) e estiver vazia, ignora (não imprime)
-            if (!(e->pilhas[p].nome_tipo[0] == 'F' && e->pilhas[p].quantidade == 0)) {
-                int destaque = (p == dica_o || p == dica_d);
-                imprimir_detalhe_pilha(&e->pilhas[p], p + 1, destaque);
-            }
+            int destaque = (p == dica_o || p == dica_d);
+            imprimir_detalhe_pilha(&e->pilhas[p], p + 1, destaque);
         }
         p++;
     }
