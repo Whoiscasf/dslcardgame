@@ -2,19 +2,17 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-
 #include "../include/estruturas.h"
 #include "../include/dsl.h"
 #include "../include/logica.h"
 #include "../include/interface.h"
 #include "../include/reutilizado.h"
 
-
 //
 // Montagem do tabuleiro de jogo
 //
 
-// Função que preenche a pilha do jogo com as cartas
+// Função que preenche uma pilha do jogo com as cartas
 void preencher_pilha(Pilha *p, Carta *deck, int *c_idx) {
     int c = 0;
     while (c < p->quantidade) {
@@ -41,13 +39,10 @@ int preparar_jogo(EstadoJogo *e, char *caminho) {
         return 0;
     }
     printf("2. Ficheiro carregado com sucesso!\n");
-
     Carta *deck = criarBaralho(e->num_baralhos);
     baralharCartas(deck, e->num_baralhos * 52);
-
     printf("3. A distribuir cartas...\n");
     distribuir_cartas_deck(e, deck);
-
     printf("4. Tudo pronto!\n");
     free(deck);
     return 1;
@@ -69,16 +64,13 @@ void processar_jogada(EstadoJogo **jogo, char *msg) {
     int o, d, q;
     pedirJogada(&o, &d, &q);
     int id_o = o - 1, id_d = d - 1;
-
     if (id_o < 0 || id_o >= (*jogo)->total_pilhas || id_d < 0 || id_d >= (*jogo)->total_pilhas) {
         sprintf(msg, "\033[31m[ERRO] Pilha inexistente!\033[0m");
         return;
     }
-
     char *tipo_o = (*jogo)->pilhas[id_o].nome_tipo;
     char *tipo_d = (*jogo)->pilhas[id_d].nome_tipo;
     char *flags = encontrar_regra(*jogo, tipo_o, tipo_d);
-
     if (verificar_movimento(&(*jogo)->pilhas[id_o], &(*jogo)->pilhas[id_d], flags, q)) {
         efetuar_movimento(jogo, id_o, id_d, q, msg);
     } else {
@@ -146,19 +138,15 @@ void verificar_estado_vitoria(EstadoJogo *jogo, int *a_jogar) {
 void impressao(EstadoJogo **j, int *loop, char *msg, int *do_, int *dd_, char *cam) {
     int cmd;
     system("clear");
-
     if (msg[0] != '\0') {
         printf("%s\n", msg);
         msg[0] = '\0';
     }
-
     mostrarTabuleiro(*j, *do_, *dd_);
     printf("\n[1] Mover | [2] Undo | [3] Save | [4] Dica | [0] Sair\nEscolha: ");
-
     if (scanf("%d", &cmd) == 1) {
         executar_comando_jogador(cmd, j, msg, do_, dd_, loop, cam);
     } else {
-        // Limpa o "lixo" do teclado se o jogador inserir uma letra sem querer
         int c;
         while ((c = getchar()) != '\n' && c != EOF);
         sprintf(msg, "\033[31m[ERRO] Comando inválido! Insere um número.\033[0m");
@@ -172,7 +160,6 @@ void iniciar_loop_jogo(EstadoJogo *jogo, char *caminho) {
     int dica_o = -1;
     int dica_d = -1;
     char msg[256] = "";
-
     while (a_jogar) {
         impressao(&jogo, &a_jogar, msg, &dica_o, &dica_d, caminho);
     }
@@ -185,7 +172,6 @@ EstadoJogo* inicializar_estado() {
     jogo->total_regras = 0;
     jogo->pilhas = NULL;
     jogo->regras = NULL;
-
     jogo->anterior = NULL;
     return jogo;
 }
@@ -197,10 +183,8 @@ EstadoJogo* inicializar_estado() {
 int main(void) {
     char caminho[50] = "";
     srand((unsigned int)time(NULL));
-
     EstadoJogo *jogo = inicializar_estado();
     int acao = menuPrincipal(caminho);
-
     if (acao == 2 && preparar_jogo(jogo, caminho)) {
         iniciar_loop_jogo(jogo, caminho);
     } else if (acao == 1 && carregar_save(jogo, "save.txt", caminho)) {
@@ -208,7 +192,6 @@ int main(void) {
     } else if (acao != 0) {
         printf("\033[31m[ERRO] Falha ao carregar o jogo.\033[0m\n");
     }
-
     printf("Obrigado por jogar!\nAté à próxima :)\n");
     return 0;
 }

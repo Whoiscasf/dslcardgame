@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
 #include "../include/estruturas.h"
 #include "../include/logica.h"
 #include "../include/reutilizado.h"
 
-/* =========================================================
- * 1. TESTES: CARTAS E VITÓRIA
- * ========================================================= */
+//
+// Testes de cartas e vitória
+//
 
+// Função que testa se o baralho é criado com sucesso
 void test_criar_baralho(void) {
     Carta *deck = criarBaralho(1);
     CU_ASSERT_PTR_NOT_NULL(deck);
@@ -19,6 +19,7 @@ void test_criar_baralho(void) {
     free(deck);
 }
 
+// Função que testa se quando as cartas são baralhadas não ocorrem erros
 void test_baralhar_cartas(void) {
     Carta *deck = criarBaralho(1);
     baralharCartas(deck, 52);
@@ -26,65 +27,63 @@ void test_baralhar_cartas(void) {
     free(deck);
 }
 
+// Teste que verifica se a vitória é corretamente detetada
 void test_verificar_vitoria(void) {
     EstadoJogo jogo; Pilha p1;
     jogo.total_pilhas = 1; jogo.pilhas = &p1;
     strcpy(p1.nome_tipo, "TAB");
-
     p1.quantidade = 3;
     CU_ASSERT_EQUAL(verificar_vitoria(&jogo), 0);
-
     p1.quantidade = 0;
     CU_ASSERT_EQUAL(verificar_vitoria(&jogo), 1);
 }
 
-/* =========================================================
- * 2. TESTES: REGRAS SIMPLES
- * ========================================================= */
+//
+// Testes para regras básicas do jogo
 
+// Função que testa as regras de sequencia de cor
 void test_regra_cor_sequencia(void) {
     Carta c4 = {4, 1};
     Carta c5 = {5, 1};
     Carta c5_preto = {5, 0};
-
     CU_ASSERT_EQUAL(regra_sequencia(c4, c5, '<'), 1);
     CU_ASSERT_EQUAL(regra_sequencia(c4, c5, '>'), 0);
     CU_ASSERT_EQUAL(regra_cor(c4, c5), 0);
     CU_ASSERT_EQUAL(regra_cor(c4, c5_preto), 1);
 }
 
+// Função que testa a implimentação das regras no jogo
 void test_aplicar_regras(void) {
     Carta co = {2, 1}; Carta cd = {3, 0};
     CU_ASSERT_EQUAL(aplicar_regras(co, cd, "D<"), 1);
     CU_ASSERT_EQUAL(aplicar_regras(co, cd, "M<"), 0);
 }
 
+// Função que testa o encontrar das regras do jogo
 void test_encontrar_regra(void) {
     EstadoJogo e; Regra r1;
     strcpy(r1.origem, "T1"); strcpy(r1.destino, "T2"); strcpy(r1.flags, "D<");
     e.total_regras = 1; e.regras = &r1;
-
     CU_ASSERT_STRING_EQUAL(encontrar_regra(&e, "T1", "T2"), "D<");
     CU_ASSERT_PTR_NULL(encontrar_regra(&e, "T1", "LIXO"));
 }
 
-/* =========================================================
- * 3. AUXILIARES PARA SETUP DE MOVIMENTOS (< 15 instruções)
- * ========================================================= */
+//
+// Teste de movimentos
+//
 
+// Função auxiliar para criar cartas e pilhas que vão ser usadas nos testes de movimento
 void preparar_cartas_e_pilhas(Pilha *p, Carta *co, Carta *cd) {
-    memset(p, 0, 2 * sizeof(Pilha)); // Limpa o "lixo" da memória!
-
+    memset(p, 0, 2 * sizeof(Pilha));
     co->num = 2; co->naipe = 1;
     cd->num = 3; cd->naipe = 0;
-
     strcpy(p[0].nome_tipo, "P1");
     p[0].quantidade = 1; p[0].cartas = co;
-
     strcpy(p[1].nome_tipo, "P2");
     p[1].quantidade = 1; p[1].cartas = cd;
 }
 
+// Função auxiliar que cria regras e o estado para ser usado nos testes de movimento
 void preparar_regras_e_estado(EstadoJogo *e, Pilha *p, Regra *r) {
     strcpy(r->origem, "P1");
     strcpy(r->destino, "P2");
@@ -93,100 +92,91 @@ void preparar_regras_e_estado(EstadoJogo *e, Pilha *p, Regra *r) {
     e->total_regras = 1; e->regras = r;
 }
 
-/* =========================================================
- * 4. TESTES: MOVIMENTOS E DICAS
- * ========================================================= */
-
+// Função que testa um movimento entre duas cartas de cor diferente
 void test_movimento_normal(void) {
     Pilha p[2]; Carta co, cd;
     preparar_cartas_e_pilhas(p, &co, &cd);
-    // Testa apenas o movimento de 2 vermelho para 3 preto
     CU_ASSERT_EQUAL(verificar_movimento(&p[0], &p[1], "D<", 1), 1);
 }
 
+// Função que testa o movimento para uma pilha vazia quando as regras não o permitem (tem de dar falso)
 void test_mov_vazio_falso(void) {
     Pilha p[2]; Carta co, cd;
     preparar_cartas_e_pilhas(p, &co, &cd);
-    p[1].quantidade = 0; // Esvazia o destino
-    // Tenta mover com regra que não permite vazios
+    p[1].quantidade = 0;
     CU_ASSERT_EQUAL(verificar_movimento(&p[0], &p[1], "D<", 1), 0);
 }
 
+// Função que testa o movimento para uma pilha vazia quando as regras permitem (tem de dar verdadeiro)
 void test_mov_vazio_verdadeiro(void) {
     Pilha p[2]; Carta co, cd;
     preparar_cartas_e_pilhas(p, &co, &cd);
-    p[1].quantidade = 0; // Esvazia o destino
-    // Tenta mover com a flag '0' que permite vazios
+    p[1].quantidade = 0;
     CU_ASSERT_EQUAL(verificar_movimento(&p[0], &p[1], "0", 1), 1);
 }
 
+// Função que testa se a funbção testar_destinos consegue encontrar um destino válido num cenário possível
 void test_testar_destinos(void) {
     EstadoJogo e; Pilha p[2]; Regra r; Carta co, cd;
     preparar_cartas_e_pilhas(p, &co, &cd);
     preparar_regras_e_estado(&e, p, &r);
-
     int d_o, d_d;
     CU_ASSERT_EQUAL(testar_destinos(&e, 0, &d_o, &d_d), 1);
 }
 
+// Função que testa se conseguiu pedir dica
 void test_pedir_dica(void) {
     EstadoJogo e; Pilha p[2]; Regra r; Carta co, cd;
     preparar_cartas_e_pilhas(p, &co, &cd);
     preparar_regras_e_estado(&e, p, &r);
-
     int d_o, d_d;
     CU_ASSERT_EQUAL(pedir_dica(&e, &d_o, &d_d), 1);
 }
 
+// Função que testa o movimento de cartas entre duas pilhas
 void test_executar_movimento_real(void) {
     Pilha o, d; o.quantidade = 2; d.quantidade = 0;
     o.cartas = malloc(2 * sizeof(Carta)); d.cartas = NULL;
-
     executar_movimento_real(&o, &d, 1);
-
     CU_ASSERT_EQUAL(o.quantidade, 1);
     CU_ASSERT_EQUAL(d.quantidade, 1);
     CU_ASSERT_PTR_NOT_NULL(d.cartas);
-
     free(o.cartas); free(d.cartas);
 }
 
-/* =========================================================
- * 5. TESTES: UNDO (Dividido para pmccabe)
- * ========================================================= */
+//
+// Testes da funcionalidade UNDO
+//
 
+// Função que testa se é realizada a cópia da pilha de maneira correta
 void test_copiar_pilha(void) {
     Pilha o, d;
     strcpy(o.nome_tipo, "TAB"); o.quantidade = 1;
     o.cartas = malloc(sizeof(Carta));
-
     copiar_pilha(&d, &o);
-
     CU_ASSERT_STRING_EQUAL(d.nome_tipo, "TAB");
     CU_ASSERT_EQUAL(d.quantidade, 1);
     CU_ASSERT_PTR_NOT_NULL(d.cartas);
-
     free(o.cartas); free(d.cartas);
 }
 
+// Função que testa se o UNDO é feito corretamente
 void test_fluxo_undo(void) {
     EstadoJogo *e1 = malloc(sizeof(EstadoJogo));
     e1->total_pilhas = 0; e1->total_regras = 0; e1->anterior = NULL;
-
     EstadoJogo *e2 = guardar_estado(e1);
     CU_ASSERT_PTR_NOT_NULL(e2);
     CU_ASSERT_PTR_EQUAL(e2->anterior, e1);
-
     EstadoJogo *e_revertido = fazer_undo(e2);
     CU_ASSERT_PTR_EQUAL(e_revertido, e1);
-
     free(e1);
 }
 
-/* =========================================================
- * 6. MOTOR DE IMPRESSÃO PERSONALIZADO
- * ========================================================= */
+//
+// Motor do CUNIT
+//
 
+// Função auxiliar para adicionar os testes
 void adicionarTestes(CU_pSuite suite) {
     CU_add_test(suite, "test_criar_baralho", test_criar_baralho);
     CU_add_test(suite, "test_baralhar_cartas", test_baralhar_cartas);
@@ -204,6 +194,7 @@ void adicionarTestes(CU_pSuite suite) {
     CU_add_test(suite, "test_fluxo_undo", test_fluxo_undo);
 }
 
+// Função que configura a Suite
 int configurarSuite(void) {
     CU_pSuite suite = CU_add_suite("Suite_Principal", NULL, NULL);
     if (NULL == suite) {
@@ -214,6 +205,7 @@ int configurarSuite(void) {
     return 1;
 }
 
+// Função que verifica se há testes a falhar
 int verificarSeFalhou(CU_pTest pTest) {
     int falhou = 0;
     CU_pFailureRecord pFailure = CU_get_failure_list();
@@ -224,6 +216,7 @@ int verificarSeFalhou(CU_pTest pTest) {
     return falhou;
 }
 
+// Função auxiliar que imprime se o teste passou ou não
 void imprimirTestesDaSuite(CU_pSuite pSuite) {
     CU_pTest pTest = (*pSuite).pTest;
     while (pTest != NULL) {
@@ -235,6 +228,7 @@ void imprimirTestesDaSuite(CU_pSuite pSuite) {
     }
 }
 
+// Função para imprimir os resultados dos testes
 void imprimirResultados(void) {
     printf("\n=======================================================\n");
     printf("                  RESULTADO DOS TESTES                 \n");
@@ -247,20 +241,15 @@ void imprimirResultados(void) {
     printf("=======================================================\n\n");
 }
 
-/* =========================================================
- * MAIN
- * ========================================================= */
+//
+// Main
+//
 
 int main(void) {
     if (CUE_SUCCESS != CU_initialize_registry()) return CU_get_error();
     if (configurarSuite() == 0) return CU_get_error();
-
-    // Corre tudo de forma invisível
     CU_run_all_tests();
-
-    // Lê a memória interna do CUnit e imprime
     imprimirResultados();
-
     CU_cleanup_registry();
     return CU_get_error();
 }
