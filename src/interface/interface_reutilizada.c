@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "../../include/estruturas.h"
 
-// Função que imprime GANH
+// Função que imprime GANHASTE
 void vitoria(void) {
     printf("  GGGGG    AAA    N   N  H   H   AAA    SSSSS  TTTTT EEEEE\n");
     printf(" G        A   A   NN  N  H   H  A   A  S        T    E    \n");

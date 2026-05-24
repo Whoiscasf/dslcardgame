@@ -81,7 +81,6 @@ void imprimir_outras_pilhas(EstadoJogo *e, int dica_o, int dica_d) {
     int p = 0;
     printf("\n--- OUTRAS PILHAS ---\n");
     while (p < e->total_pilhas) {
-        // Se a pilha NÃO for do Tableau (T), imprime-a sempre!
         if (e->pilhas[p].nome_tipo[0] != 'T') {
             int destaque = (p == dica_o || p == dica_d);
             imprimir_detalhe_pilha(&e->pilhas[p], p + 1, destaque);
@@ -95,14 +94,11 @@ void imprimir_outras_pilhas(EstadoJogo *e, int dica_o, int dica_d) {
 void mostrarTabuleiro(EstadoJogo *e, int dica_o, int dica_d) {
     int max_h = obterMaxAltura(e);
     int h = 0;
-
     imprimir_cabecalhos(e, dica_o, dica_d);
-
     while (h < max_h) {
         imprimir_linha_tabuleiro(e, h, dica_o, dica_d);
         h++;
     }
-
     imprimir_outras_pilhas(e, dica_o, dica_d);
 }
 
@@ -111,7 +107,6 @@ int listar_jogos(char ficheiros[][50]) {
     DIR *d = opendir("paciencias");
     struct dirent *dir;
     int count = 1;
-
     if (d) {
         while ((dir = readdir(d)) != NULL) {
             if (strstr(dir->d_name, ".txt") != NULL) {
@@ -154,49 +149,3 @@ void pedirJogada(int *orig, int *dest, int *qtd) {
     printf("\nJogada (Origem Destino Qtd) Ex: '1 2 1': ");
     scanf("%d %d %d", orig, dest, qtd);
 }
-
-/*
-NOTAS DE CODIGO
-    imprimirCarta:
-        Esta função recebe uma carta e imprime-a no ecrã. Ela tem dois arrays essenciais: um com os símbolos
-        dos naipes (♠, ♥, ♦, ♣) e outro com as cores. Copas e Ouros ficam vermelhos, Espadas e Paus assumem a
-        cor normal do terminal. Se o valor destaque for verdadeiro (usado para as Dicas do teu jogo), a carta é
-        desenhada a amarelo (\033[33m).
-
-    obterMaxAltura:
-        Percorre todas as pilhas do tipo 'T' (Tableau/Colunas principais) e descobre qual é a que tem mais cartas.
-        Isto serve para sabermos quantas linhas (fatias) temos de desenhar no ecrã.
-
-    imprimir_cabecalhos:
-        Imprime a primeira linha do jogo: os nomes das colunas (C1, C2, C3...). Se a coluna fizer parte de uma dica,
-        pinta o cabeçalho a amarelo.
-
-    imprimir_linha_tabuleiro:
-        Desenha uma "fatia" horizontal do jogo na altura h. Vai a cada coluna e verifica: "Tens alguma carta nesta altura?".
-        Se sim, imprime a carta. Se não (se a coluna for mais pequena que a altura atual), imprime um espaço vazio (\t).
-
-    imprimir_detalhe_pilha:
-        É uma função auxiliar excelente para respeitar o limite do pmccabe. Trata de desenhar o estado de uma única pilha
-        que não seja o tabuleiro principal. Se for o baralho de reserva ('S' de Stock), não mostra a carta, mostra apenas
-        um ícone [ ? ] e o número de cartas escondidas.
-
-    imprimir_outras_pilhas:
-        Faz um ciclo por todas as pilhas que não são o Tabuleiro. Para manter o ecrã limpo, ela ignora Fundações ('F')
-        que ainda estejam vazias. Para as restantes, chama a função auxiliar imprimir_detalhe_pilha.
-
-    mostrarTabuleiro:
-        É o maestro. Chama os cabeçalhos, faz um ciclo para chamar as linhas do tabuleiro até à altura máxima,
-        e no fim chama as outras pilhas.
-
-    listar_jogos:
-        Usa a biblioteca <dirent.h> para abrir a pasta paciencias/ do teu projeto. Lê todos os ficheiros terminados em
-        .txt e imprime-os no ecrã como opções numeradas.
-
-    menuPrincipal:
-        Limpa o ecrã (system("clear")), imprime o título do jogo e mostra as opções disponíveis (Carregar Save,
-        os jogos encontrados na pasta, ou Sair).
-
-    pedirJogada:
-        Imprime a mensagem a pedir a jogada e usa o scanf para ler os três números que o jogador escrever
-        (ex: mover 1 carta da coluna 1 para a coluna 2).
- */

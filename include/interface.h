@@ -16,7 +16,7 @@ void imprimir_cabecalho_menu(void);
 int menuPrincipal(char *caminho);
 void pedirJogada(int *orig, int *dest, int *qtd);
 
-// Funções em int
+// Função em inr
 void vitoria(void);
 
 #endif

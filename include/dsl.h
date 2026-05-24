@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "estruturas.h"
 
-// Funções em laitor_dsl.c
+// Funções em leitor_dsl.c
 int linha_valida(char *linha);
 void tratar_init(EstadoJogo *e, char *tipo, int n);
 void tratar_mov(EstadoJogo *e, char *orig, char *dest, char *flags);
