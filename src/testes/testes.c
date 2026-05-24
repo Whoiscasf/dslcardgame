@@ -41,6 +41,7 @@ void test_verificar_vitoria(void) {
 
 //
 // Testes para regras básicas do jogo
+//
 
 // Função que testa as regras de sequencia de cor
 void test_regra_cor_sequencia(void) {
@@ -60,16 +61,21 @@ void test_aplicar_regras(void) {
     CU_ASSERT_EQUAL(aplicar_regras(co, cd, "M<"), 0);
 }
 
-// Função que testa o encontrar das regras do jogo
+// Função auxiliar para preparar dados
+void aux_prep_regras(EstadoJogo *e, Regra *r, Pilha p[]) {
+    strcpy(p[0].nome_tipo, "T1");   p[0].quantidade = 1;
+    strcpy(p[1].nome_tipo, "T2");   p[1].quantidade = 1;
+    strcpy(p[2].nome_tipo, "L");    p[2].quantidade = 1;
+    strcpy(r->origem, "T1"); strcpy(r->destino, "T2"); strcpy(r->flags, "D<");
+    e->total_regras = 1; e->regras = r;
+}
+
+// Função que testa se a regra é encontrada
 void test_encontrar_regra(void) {
-    EstadoJogo e; Regra r1; Pilha p1, p2, p3;
-    strcpy(p1.nome_tipo, "T1"); p1.quantidade = 1;
-    strcpy(p2.nome_tipo, "T2"); p2.quantidade = 1;
-    strcpy(p3.nome_tipo, "LIXO"); p3.quantidade = 1;
-    strcpy(r1.origem, "T1"); strcpy(r1.destino, "T2"); strcpy(r1.flags, "D<");
-    e.total_regras = 1; e.regras = &r1;
-    CU_ASSERT_STRING_EQUAL(encontrar_regra(&e, &p1, &p2), "D<");
-    CU_ASSERT_PTR_NULL(encontrar_regra(&e, &p1, &p3));
+    EstadoJogo e; Regra r1; Pilha p[3];
+    aux_prep_regras(&e, &r1, p);
+    CU_ASSERT_STRING_EQUAL(encontrar_regra(&e, &p[0], &p[1]), "D<");
+    CU_ASSERT_PTR_NULL(encontrar_regra(&e, &p[0], &p[2]));
 }
 
 // Função que testa se o computador encontra as regras de automatico
@@ -95,6 +101,38 @@ void test_verificar_vazio(void) {
     CU_ASSERT_EQUAL(verificar_vazio(rei, "KV"), 1);
     CU_ASSERT_EQUAL(verificar_vazio(normal, "K"), 0);
     CU_ASSERT_EQUAL(verificar_vazio(normal, "V"), 1);
+}
+
+// Função que verifica se a regra 'V' bate certo com o estado de espaço ocupado/vazio
+void test_regra_combina_estado(void) {
+    CU_ASSERT_EQUAL(regra_combina_estado(0, "AV"), 1);
+    CU_ASSERT_EQUAL(regra_combina_estado(1, "AV"), 0);
+    CU_ASSERT_EQUAL(regra_combina_estado(1, "D<"), 1);
+    CU_ASSERT_EQUAL(regra_combina_estado(0, "D<"), 0);
+}
+
+// Função que verifica se o sistema reconhece um bloco de cartas perfeito
+void test_verificar_bloco(void) {
+    Pilha p; Carta c[3];
+    c[0].num = 5; c[0].naipe = 1;
+    c[1].num = 4; c[1].naipe = 1;
+    c[2].num = 3; c[2].naipe = 1;
+    p.cartas = c; p.quantidade = 3;
+    CU_ASSERT_EQUAL(verificar_bloco(&p, 3), 1);
+    c[1].naipe = 2;
+    CU_ASSERT_EQUAL(verificar_bloco(&p, 3), 0);
+}
+
+// Função que verifica as novas barreiras de segurança para espaços vazios
+void test_decidir_vazio(void) {
+    Carta as = {1, 0}, rei = {13, 0}, normal = {5, 0};
+    Pilha fund, tab;
+    strcpy(fund.nome_tipo, "FUND");
+    strcpy(tab.nome_tipo, "TAB");
+    CU_ASSERT_EQUAL(decidir_vazio(as, &fund, "AV", 1), 1);
+    CU_ASSERT_EQUAL(decidir_vazio(normal, &fund, "AV", 1), 0);
+    CU_ASSERT_EQUAL(decidir_vazio(rei, &tab, "KV", 1), 1);
+    CU_ASSERT_EQUAL(decidir_vazio(normal, &tab, "0", 1), 1);
 }
 
 //
@@ -205,7 +243,7 @@ void test_fluxo_undo(void) {
 // Motor do CUNIT
 //
 
-// Primeira metade dos testes
+// Primeira parte dos testes
 void adicionarTestes_parte1(CU_pSuite suite) {
     CU_add_test(suite, "test_criar_baralho", test_criar_baralho);
     CU_add_test(suite, "test_baralhar_cartas", test_baralhar_cartas);
@@ -217,7 +255,7 @@ void adicionarTestes_parte1(CU_pSuite suite) {
     CU_add_test(suite, "test_mov_vazio_falso", test_mov_vazio_falso);
 }
 
-// Segunda metade dos testes
+// Segunda parte dos testes
 void adicionarTestes_parte2(CU_pSuite suite) {
     CU_add_test(suite, "test_mov_vazio_verdadeiro", test_mov_vazio_verdadeiro);
     CU_add_test(suite, "test_testar_destinos", test_testar_destinos);
@@ -229,6 +267,13 @@ void adicionarTestes_parte2(CU_pSuite suite) {
     CU_add_test(suite, "test_verificar_vazio", test_verificar_vazio);
 }
 
+// Terceira parte dos testes
+void adicionarTestes_parte3(CU_pSuite suite) {
+    CU_add_test(suite, "test_regra_combina_estado", test_regra_combina_estado);
+    CU_add_test(suite, "test_verificar_bloco", test_verificar_bloco);
+    CU_add_test(suite, "test_decidir_vazio", test_decidir_vazio);
+}
+
 // Função que configura a suite
 int configurarSuite(void) {
     CU_pSuite suite = CU_add_suite("Suite_Principal", NULL, NULL);
@@ -238,6 +283,7 @@ int configurarSuite(void) {
     }
     adicionarTestes_parte1(suite);
     adicionarTestes_parte2(suite);
+    adicionarTestes_parte3(suite);
     return 1;
 }
 
