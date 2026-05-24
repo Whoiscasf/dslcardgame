@@ -7,6 +7,7 @@
 int linha_valida(char *linha);
 void tratar_init(EstadoJogo *e, char *tipo, int n);
 void tratar_mov(EstadoJogo *e, char *orig, char *dest, char *flags);
+void tratar_auto(EstadoJogo *e, char *orig, char *dest, char *flags);
 void processar_comando(char *linha, EstadoJogo *e);
 int carregar_paciencia(const char *nome_ficheiro, EstadoJogo *e);
 

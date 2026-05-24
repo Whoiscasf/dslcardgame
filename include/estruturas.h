@@ -29,6 +29,8 @@ typedef struct EstadoJogo {
     Regra *regras;
     int total_regras;
     int num_baralhos;
+    int total_auto_regras;
+    Regra *auto_regras;
     struct EstadoJogo *anterior;
 } EstadoJogo;
 

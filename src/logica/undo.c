@@ -24,12 +24,15 @@ EstadoJogo* guardar_estado(EstadoJogo *atual) {
     int i = 0;
     novo->total_pilhas = atual->total_pilhas;
     novo->pilhas = malloc(atual->total_pilhas * sizeof(Pilha));
+    
     while (i < atual->total_pilhas) {
         copiar_pilha(&novo->pilhas[i], &atual->pilhas[i]);
         i++;
     }
     novo->total_regras = atual->total_regras;
     novo->regras = atual->regras;
+    novo->total_auto_regras = atual->total_auto_regras;
+    novo->auto_regras = atual->auto_regras;
     novo->anterior = atual;
     return novo;
 }

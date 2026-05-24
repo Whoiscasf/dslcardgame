@@ -24,11 +24,30 @@ void tratar_init(EstadoJogo *e, char *tipo, int n) {
 
 // Função que regista as regras de como as cartas se podem mover entre pilhas quando encontra o comando MOV
 void tratar_mov(EstadoJogo *e, char *orig, char *dest, char *flags) {
+    int i = 0;
+    while (flags[i] != '\0') {
+        if (flags[i] >= 'a' && flags[i] <= 'z') flags[i] -= 32;
+        i++;
+    }
     e->regras = realloc(e->regras, (e->total_regras + 1) * sizeof(Regra));
     strcpy(e->regras[e->total_regras].origem, orig);
     strcpy(e->regras[e->total_regras].destino, dest);
     strcpy(e->regras[e->total_regras].flags, flags);
     e->total_regras++;
+}
+
+// Função auxiliar para guardar as regras automáticas
+void tratar_auto(EstadoJogo *e, char *orig, char *dest, char *flags) {
+    int i = 0;
+    while (flags[i] != '\0') {
+        if (flags[i] >= 'a' && flags[i] <= 'z') flags[i] -= 32;
+        i++;
+    }
+    e->auto_regras = realloc(e->auto_regras, (e->total_auto_regras + 1) * sizeof(Regra));
+    strcpy(e->auto_regras[e->total_auto_regras].origem, orig);
+    strcpy(e->auto_regras[e->total_auto_regras].destino, dest);
+    strcpy(e->auto_regras[e->total_auto_regras].flags, flags);
+    e->total_auto_regras++;
 }
 
 // Função que percebe qual é o comando específico dentro de uma linha válida
@@ -42,6 +61,9 @@ void processar_comando(char *linha, EstadoJogo *e) {
     }
     else if (sscanf(linha, "MOV %s %s %s", p1, p2, p3) == 3) {
         tratar_mov(e, p1, p2, p3);
+    }
+    else if (sscanf(linha, "AUTO %s %s %s", p1, p2, p3) == 3) {
+        tratar_auto(e, p1, p2, p3);
     }
     else if (sscanf(linha, "BARALHOS %d", &n) == 1) {
         e->num_baralhos = n;

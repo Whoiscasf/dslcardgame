@@ -68,13 +68,57 @@ void processar_jogada(EstadoJogo **jogo, char *msg) {
         sprintf(msg, "\033[31m[ERRO] Pilha inexistente!\033[0m");
         return;
     }
-    char *tipo_o = (*jogo)->pilhas[id_o].nome_tipo;
-    char *tipo_d = (*jogo)->pilhas[id_d].nome_tipo;
-    char *flags = encontrar_regra(*jogo, tipo_o, tipo_d);
+    char *flags = encontrar_regra(*jogo, &(*jogo)->pilhas[id_o], &(*jogo)->pilhas[id_d]);
     if (verificar_movimento(&(*jogo)->pilhas[id_o], &(*jogo)->pilhas[id_d], flags, q)) {
         efetuar_movimento(jogo, id_o, id_d, q, msg);
     } else {
         sprintf(msg, "\033[31m[ERRO] Movimento inválido pelas regras!\033[0m");
+    }
+}
+// Função que testa as regras e move as cartas para 2 pilhas
+int tentar_auto_movimento(EstadoJogo **j, int o, int d, char *msg) {
+    int r = 0;
+    while (r < (*j)->total_auto_regras) {
+        if (strcmp((*j)->auto_regras[r].origem, (*j)->pilhas[o].nome_tipo) == 0 &&
+            strcmp((*j)->auto_regras[r].destino, (*j)->pilhas[d].nome_tipo) == 0) {
+            char *flags = (*j)->auto_regras[r].flags;
+            if (strchr(flags, '+') != NULL) {
+                if ((*j)->pilhas[o].quantidade >= 13 && verificar_movimento(&(*j)->pilhas[o], &(*j)->pilhas[d], flags, 13)) {
+                    efetuar_movimento(j, o, d, 13, msg);
+                    return 1;
+                }
+            }
+            else {
+                if (verificar_movimento(&(*j)->pilhas[o], &(*j)->pilhas[d], flags, 1)) {
+                    efetuar_movimento(j, o, d, 1, msg);
+                    return 1;
+                }
+            }
+            }
+        r++;
+    }
+    return 0;
+}
+
+// Função que executa o movimento automático
+void executar_movimentos_automaticos(EstadoJogo **jogo) {
+    int o, d, moveu = 1;
+    char msg_lixo[256];
+    while (moveu == 1) {
+        moveu = 0;
+        o = 0;
+        while (o < (*jogo)->total_pilhas && moveu == 0) {
+            if ((*jogo)->pilhas[o].quantidade > 0) {
+                d = 0;
+                while (d < (*jogo)->total_pilhas && moveu == 0) {
+                    if (o != d && tentar_auto_movimento(jogo, o, d, msg_lixo)) {
+                        moveu = 1;
+                    }
+                    d++;
+                }
+            }
+            o++;
+        }
     }
 }
 
@@ -85,6 +129,7 @@ void processar_jogada(EstadoJogo **jogo, char *msg) {
 // Processa a jogada e apaga qualquer dica que esteja no ecrã
 void tratar_movimento(EstadoJogo **j, char *msg, int *do_, int *dd_) {
     processar_jogada(j, msg);
+    executar_movimentos_automaticos(j);
     *do_ = -1;
     *dd_ = -1;
 }
@@ -172,6 +217,8 @@ EstadoJogo* inicializar_estado() {
     jogo->total_regras = 0;
     jogo->pilhas = NULL;
     jogo->regras = NULL;
+    jogo->total_auto_regras = 0;
+    jogo->auto_regras = NULL;
     jogo->anterior = NULL;
     return jogo;
 }

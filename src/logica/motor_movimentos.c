@@ -3,18 +3,50 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// Função auxiliar que verifica se a regra de Vazio ('V') bate certo com o estado da pilha
+int regra_combina_estado(int qtd_dest, char *flags) {
+    int tem_v = (strchr(flags, 'V') != NULL || strchr(flags, 'v') != NULL);
+    if (qtd_dest == 0 && tem_v) return 1;
+    if (qtd_dest > 0 && !tem_v) return 1;
+    return 0;
+}
+
+// Função auxiliar que verifica se as 13 cartas estão em sequência perfeita do mesmo naipe
+int verificar_bloco(Pilha *o, int q) {
+    int i = 1;
+    while (i < q) {
+        Carta cima = o->cartas[o->quantidade - q + i - 1];
+        Carta baixo = o->cartas[o->quantidade - q + i];
+        if (cima.naipe != baixo.naipe || cima.num != baixo.num + 1) return 0;
+        i++;
+    }
+    return 1;
+}
+
+// Função auxiliar que decide as regras específicas para colunas vazias
+int decidir_vazio(Carta c, Pilha *d, char *flags, int q) {
+    if (strchr(flags, '0') != NULL) return 1;
+    if (d->nome_tipo[0] == 'F') {
+        if (q == 13) return (c.num == 13); // Simple Simon
+        return (c.num == 1);               // Klondike/Freecell
+    }
+    if (strchr(flags, 'K') != NULL || strchr(flags, 'k') != NULL) return (c.num == 13);
+    return 1;
+}
+
 // Função que procura a regra exata para usar ao mover uma carta da pilha
-char* encontrar_regra(EstadoJogo *e, char *tipo_orig, char *tipo_dest) {
+char* encontrar_regra(EstadoJogo *e, Pilha *orig, Pilha *dest) {
     int i = 0;
-    char *encontrada = NULL;
-    while (i < e->total_regras && encontrada == NULL) {
-        if (strcmp(e->regras[i].origem, tipo_orig) == 0 &&
-            strcmp(e->regras[i].destino, tipo_dest) == 0) {
-            encontrada = e->regras[i].flags;
+    while (i < e->total_regras) {
+        if (strcmp(e->regras[i].origem, orig->nome_tipo) == 0 &&
+            strcmp(e->regras[i].destino, dest->nome_tipo) == 0) {
+            if (regra_combina_estado(dest->quantidade, e->regras[i].flags)) {
+                return e->regras[i].flags;
+            }
         }
         i++;
     }
-    return encontrada;
+    return NULL;
 }
 
 // Função que verifica se as cartas estão em sequência
@@ -34,8 +66,8 @@ int regra_cor(Carta c1, Carta c2) {
 
 // Função auxiliar que verifica apenas cor e naipe
 int aplicar_regras_naipe(Carta c_o, Carta c_d, char *flags) {
-    if (strchr(flags, 'D') && !regra_cor(c_o, c_d)) return 0;
-    if (strchr(flags, 'M') && c_o.naipe != c_d.naipe) return 0;
+    if ((strchr(flags, 'D') || strchr(flags, 'd')) && !regra_cor(c_o, c_d)) return 0;
+    if ((strchr(flags, 'M') || strchr(flags, 'm')) && c_o.naipe != c_d.naipe) return 0;
     return 1;
 }
 
@@ -48,8 +80,7 @@ int aplicar_regras_direcao(Carta c_o, Carta c_d, char *flags) {
 
 // Função auxiliar que verifica apenas os vizinhos (V e ~)
 int aplicar_regras_vizinhos(Carta c_o, Carta c_d, char *flags) {
-    if (strchr(flags, 'V') && !regra_sequencia(c_o, c_d, 'V')) return 0;
-    if (strchr(flags, '~') && !regra_sequencia(c_o, c_d, 'V')) return 0;
+    if (strchr(flags, '~') != NULL && !regra_sequencia(c_o, c_d, 'V')) return 0;
     return 1;
 }
 
@@ -61,15 +92,21 @@ int aplicar_regras(Carta c_o, Carta c_d, char *flags) {
     return 1;
 }
 
+// Função auxiliar que decide se uma carta pode ir para o vazio
+int verificar_vazio(Carta c_origem, char *flags) {
+    if (strchr(flags, 'A') != NULL || strchr(flags, 'a') != NULL) return (c_origem.num == 1);
+    if (strchr(flags, 'K') != NULL || strchr(flags, 'k') != NULL) return (c_origem.num == 13);
+    return 1;
+}
+
 // Função que usa as anteriores para verificar se um movimento é válido
 int verificar_movimento(Pilha *o, Pilha *d, char *flags, int q) {
-    if (q <= 0 || q > o->quantidade) return 0;
-    if (flags == NULL) return 0;
-    if (d->quantidade == 0) {
-        if (strchr(flags, '0') != NULL) return 1;
-        return 0;
-    }
+    if (q <= 0 || q > o->quantidade || flags == NULL) return 0;
+    if (q > 1 && !verificar_bloco(o, q)) return 0;
     Carta c_origem = o->cartas[o->quantidade - q];
+    if (d->quantidade == 0) {
+        return decidir_vazio(c_origem, d, flags, q);
+    }
     Carta c_destino = d->cartas[d->quantidade - 1];
     return aplicar_regras(c_origem, c_destino, flags);
 }
@@ -83,12 +120,9 @@ int testar_destinos(EstadoJogo *e, int o, int *dica_o, int *dica_d) {
     int d = 0;
     while (d < e->total_pilhas) {
         if (o != d) {
-            char *tipo_o = e->pilhas[o].nome_tipo;
-            char *tipo_d = e->pilhas[d].nome_tipo;
-            char *flags = encontrar_regra(e, tipo_o, tipo_d);
+            char *flags = encontrar_regra(e, &e->pilhas[o], &e->pilhas[d]);
             if (verificar_movimento(&e->pilhas[o], &e->pilhas[d], flags, 1)) {
-                *dica_o = o;
-                *dica_d = d;
+                *dica_o = o; *dica_d = d;
                 return 1;
             }
         }
