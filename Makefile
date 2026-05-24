@@ -25,5 +25,6 @@ testes:
 pmccabe:
 	pmccabe -v src/main.c src/testes/testes.c $(BASE)
 
+# 5. Clean
 clean:
 	rm -f jogo testes
